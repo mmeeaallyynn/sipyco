@@ -108,6 +108,7 @@ class Client:
 
     def __init__(self, host, port, target_name=AutoTarget, timeout=None):
         self.__socket = socket.create_connection((host, port), timeout)
+        self.__lock = threading.Lock()
 
         try:
             self.__socket.sendall(_init_string)
@@ -184,7 +185,8 @@ class Client:
             raise AttributeError
 
         def proxy(*args, **kwargs):
-            return self.__do_rpc(name, args, kwargs)
+            with self.__lock:
+                return self.__do_rpc(name, args, kwargs)
         return proxy
 
 
