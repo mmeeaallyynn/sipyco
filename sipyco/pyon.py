@@ -170,10 +170,14 @@ class _Encoder:
 
     def encode(self, x):
         ty = _encode_map.get(type(x), None)
-        if ty is None:
-            raise TypeError("`{!r}` ({}) is not PYON serializable"
-                            .format(x, type(x)))
-        return getattr(self, "encode_" + ty)(x)
+        if ty is not None:
+            return getattr(self, "encode_" + ty)(x)
+
+        if hasattr(x, "_pyon_encode"):
+            return self.encode(x._pyon_encode())
+
+        raise TypeError("`{!r}` ({}) is not PYON serializable"
+                        .format(x, type(x)))
 
 
 def encode(x, pretty=False):
