@@ -1,3 +1,4 @@
+import threading
 import os
 import asyncio
 from asyncio.streams import FlowControlMixin
@@ -204,15 +205,20 @@ else:  # windows
     class ChildComm:
         def __init__(self, address):
             self.f = open(address, "a+b", 0)
+            self.read_lock = threading.Lock()
+            self.write_lock = threading.Lock()
 
         def read(self, n):
-            return self.f.read(n)
+            with self.read_lock:
+                return self.f.read(n)
 
         def readline(self):
-            return self.f.readline()
+            with self.read_lock:
+                return self.f.readline()
 
         def write(self, data):
-            return self.f.write(data)
+            with self.write_lock:
+                return self.f.write(data)
 
         def close(self):
             self.f.close()
